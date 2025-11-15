@@ -8,10 +8,11 @@ use App\Models\Category;
 
 class ProductController extends Controller
 {
+    // ========== MÉTODOS ADMIN ==========
+    
     // Muestra la lista de productos (Vista 'Read').
     public function index()
     {
-        // Solamente con la relación 'category'
         $products = Product::with('category')->get();
         return view('admin.products.index', compact('products'));
     }
@@ -83,5 +84,48 @@ class ProductController extends Controller
 
         return redirect()->route('products.index')
                          ->with('success', 'Producto eliminado exitosamente.');
+    }
+
+    // ========== MÉTODOS PÚBLICOS MEJORADOS ==========
+
+    // Muestra la lista pública de productos CON FILTROS Y PAGINACIÓN
+    public function publicIndex(Request $request)
+    {
+        $query = Product::with('category');
+
+        // Filtro de búsqueda
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        // Filtro de categoría
+        if ($request->filled('category')) {
+            $query->where('category_id', $request->category);
+        }
+
+        // Filtro de precio mínimo
+        if ($request->filled('min_price')) {
+            $query->where('price', '>=', $request->min_price);
+        }
+
+        // Filtro de precio máximo
+        if ($request->filled('max_price')) {
+            $query->where('price', '<=', $request->max_price);
+        }
+
+        // Paginación de 12 productos por página
+        $products = $query->paginate(12)->withQueryString();
+        
+        // Traer categorías para el filtro del sidebar
+        $categories = Category::all();
+
+        return view('products.public-index', compact('products', 'categories'));
+    }
+
+    // Muestra un solo producto público
+    public function publicShow($id)
+    {
+        $product = Product::with('category')->findOrFail($id);
+        return view('products.public-show', compact('product'));
     }
 }

@@ -2,14 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Category;
 use Illuminate\Http\Request;
+use App\Models\Category;
+use App\Models\Product;
 
 class CategoryController extends Controller
 {
+    // ========== MÉTODOS ADMIN ==========
+    
     public function index()
     {
-        $categories = Category::all();
+        $categories = Category::withCount('products')->get();
         return view('admin.categories.index', compact('categories'));
     }
 
@@ -24,14 +27,16 @@ class CategoryController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
         ]);
+
         Category::create($validated);
+
         return redirect()->route('categories.index')
                          ->with('success', 'Categoría creada exitosamente.');
     }
 
     public function show($id)
     {
-        $category = Category::findOrFail($id);
+        $category = Category::with('products')->findOrFail($id);
         return view('admin.categories.show', compact('category'));
     }
 
@@ -47,8 +52,10 @@ class CategoryController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
         ]);
+
         $category = Category::findOrFail($id);
         $category->update($validated);
+
         return redirect()->route('categories.index')
                          ->with('success', 'Categoría actualizada exitosamente.');
     }
@@ -57,19 +64,26 @@ class CategoryController extends Controller
     {
         $category = Category::findOrFail($id);
         $category->delete();
+
         return redirect()->route('categories.index')
-                         ->with('success', 'Categoría eliminada correctamente.');
+                         ->with('success', 'Categoría eliminada exitosamente.');
     }
+
+    // ========== MÉTODOS PÚBLICOS ==========
+
+    // Lista pública de categorías
     public function publicIndex()
     {
         $categories = Category::withCount('products')->get();
         return view('categories.public-index', compact('categories'));
     }
 
+    // Productos de una categoría específica
     public function publicShow($id)
     {
-        $category = Category::with('products')->findOrFail($id);
-        return view('categories.public-show', compact('category'));
-    }    
+        $category = Category::findOrFail($id);
+        $products = $category->products()->paginate(12);
+        
+        return view('categories.public-show', compact('category', 'products'));
+    }
 }
-
