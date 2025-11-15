@@ -60,5 +60,16 @@ class CategoryController extends Controller
         return redirect()->route('categories.index')
                          ->with('success', 'Categoría eliminada correctamente.');
     }
+    public function publicIndex()
+    {
+        $categories = Category::withCount('products')->get();
+        return view('categories.public-index', compact('categories'));
+    }
+
+    public function publicShow($id)
+    {
+        $category = Category::with('products')->findOrFail($id);
+        return view('categories.public-show', compact('category'));
+    }    
 }
 

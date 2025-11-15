@@ -8,22 +8,20 @@ use App\Models\Category;
 
 class ProductController extends Controller
 {
-    // Muestra la lista de productos (Vista 'Read').
+    // ========== MÉTODOS ADMIN ==========
+    
     public function index()
     {
-        // Solamente con la relación 'category'
         $products = Product::with('category')->get();
         return view('admin.products.index', compact('products'));
     }
 
-    // Muestra el formulario para crear un nuevo producto (Vista 'Create').
     public function create()
     {
         $categories = Category::all();
         return view('admin.products.create', compact('categories'));
     }
 
-    // Guarda el nuevo producto en la base de datos (Lógica 'Create').
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -41,14 +39,12 @@ class ProductController extends Controller
                          ->with('success', 'Producto creado exitosamente.');
     }
 
-    // Muestra un producto específico (Vista 'Read' individual, opcional).
     public function show($id)
     {
         $product = Product::with('category')->findOrFail($id);
         return view('admin.products.show', compact('product'));
     }
 
-    // Muestra el formulario para editar un producto (Vista 'Update').
     public function edit($id)
     {
         $product = Product::findOrFail($id);
@@ -56,7 +52,6 @@ class ProductController extends Controller
         return view('admin.products.edit', compact('product', 'categories'));
     }
 
-    // Actualiza el producto en la base de datos (Lógica 'Update').
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
@@ -75,7 +70,6 @@ class ProductController extends Controller
                          ->with('success', 'Producto actualizado exitosamente.');
     }
 
-    // Elimina un producto (Lógica 'Delete').
     public function destroy($id)
     {
         $product = Product::findOrFail($id);
@@ -83,5 +77,43 @@ class ProductController extends Controller
 
         return redirect()->route('products.index')
                          ->with('success', 'Producto eliminado exitosamente.');
+    }
+
+    // ========== MÉTODOS PÚBLICOS ==========
+    
+    public function publicIndex(Request $request)
+    {
+        $query = Product::with('category');
+
+        if ($request->has('category') && $request->category != '') {
+            $query->where('category_id', $request->category);
+        }
+
+        if ($request->has('search') && $request->search != '') {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->has('min_price')) {
+            $query->where('price', '>=', $request->min_price);
+        }
+        if ($request->has('max_price')) {
+            $query->where('price', '<=', $request->max_price);
+        }
+
+        $products = $query->paginate(12);
+        $categories = Category::all();
+
+        return view('products.public-index', compact('products', 'categories'));
+    }
+
+    public function publicShow($id)
+    {
+        $product = Product::with('category')->findOrFail($id);
+        $relatedProducts = Product::where('category_id', $product->category_id)
+            ->where('id', '!=', $id)
+            ->take(4)
+            ->get();
+
+        return view('products.public-show', compact('product', 'relatedProducts'));
     }
 }
