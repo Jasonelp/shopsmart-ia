@@ -62,9 +62,9 @@
                     
                     <div class="space-y-4">
                         @if($product->stock > 0)
-                            <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg transition duration-200 text-lg">
+                            <a href="{{ route('add_to_cart', $product->id) }}" class="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg transition duration-200 text-lg">
                                 🛒 Añadir al Carrito
-                            </button>
+                            </a>
                         @else
                             <button disabled class="w-full bg-gray-600 text-gray-400 font-bold py-4 px-6 rounded-lg cursor-not-allowed text-lg">
                                 No Disponible

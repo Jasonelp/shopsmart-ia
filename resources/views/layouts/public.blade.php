@@ -60,18 +60,23 @@
 
                 <!-- Iconos de usuario -->
                 <div class="flex items-center space-x-4">
-                    <button class="text-gray-300 hover:text-white transition relative">
-                        <span class="sr-only">Carrito</span>
-                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">0</span>
-                    </button>
                     @auth
+                        <!-- Carrito (solo para usuarios autenticados) -->
+                        <a href="{{ route('cart.index') }}" class="text-gray-300 hover:text-white transition relative">
+                            <span class="sr-only">Carrito</span>
+                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                                {{ session('cart') ? count(session('cart')) : 0 }}
+                            </span>
+                        </a>
+                        <!-- Dashboard -->
                         <a href="{{ route('dashboard') }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
                             Dashboard
                         </a>
                     @else
+                        <!-- Si no está autenticado, mostrar login -->
                         <a href="{{ route('login') }}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition">
                             Iniciar Sesión
                         </a>

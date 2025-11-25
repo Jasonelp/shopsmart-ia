@@ -6,6 +6,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\CartController;
 use App\Http\Middleware\AdminOnly;
 
 // ========== RUTAS PÚBLICAS ==========
@@ -23,21 +24,26 @@ Route::get('/categoria/{id}', [CategoryController::class, 'publicShow'])->name('
 
 // ========== RUTAS AUTENTICADAS ==========
 
-// Dashboard
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::middleware(['auth', 'verified'])->group(function () {
+    // Dashboard
+    Route::get('/dashboard', function () {
+        return view('dashboard');
+    })->name('dashboard');
 
-// Perfil de usuario
-Route::middleware('auth')->group(function () {
+    // Perfil de usuario
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Rutas del Carrito
+    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+    Route::get('/add-to-cart/{id}', [CartController::class, 'addToCart'])->name('add_to_cart');
+    Route::delete('/remove-from-cart', [CartController::class, 'remove'])->name('cart.remove');
 });
 
 // ========== RUTAS DE ADMIN ==========
 
-Route::middleware(['auth', AdminOnly::class])->group(function () {
+Route::middleware(['auth', AdminOnly::class])->prefix('admin')->group(function () {
     Route::resource('products', ProductController::class);
     Route::resource('categories', CategoryController::class);
     Route::resource('orders', OrderController::class);
