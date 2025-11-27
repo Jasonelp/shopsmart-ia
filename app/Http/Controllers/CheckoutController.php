@@ -10,88 +10,112 @@ use Illuminate\Support\Facades\DB;
 
 class CheckoutController extends Controller
 {
-    // Muestra la lista de órdenes (El 3er CRUD que te piden)
     public function index()
     {
-        $user = Auth::user();
-
-        // Admin y Vendedor ven todo (simplificado para el proyecto)
-        if ($user->role === 'admin' || $user->role === 'vendedor') {
-            $orders = Order::with(['user', 'products'])->latest()->paginate(10);
-        } else {
-            // Cliente solo ve SUS órdenes
-            $orders = Order::where('user_id', $user->id)
-                           ->with(['products'])
-                           ->latest()
-                           ->paginate(10);
+        $cart = session()->get('cart', []);
+        
+        if (empty($cart)) {
+            return redirect()->route('cart.index')->with('error', 'Tu carrito está vacío');
         }
 
-        return view('orders.index', compact('orders'));
+        $total = 0;
+        foreach ($cart as $item) {
+            $total += $item['price'] * $item['quantity'];
+        }
+
+        return view('checkout.index', compact('cart', 'total'));
     }
 
-    // Procesa la compra cuando das click en "Confirmar"
-    public function placeOrder(Request $request)
+    public function process(Request $request)
     {
-        // 1. Validar usuario logueado
-        if (!Auth::check()) {
-            return redirect()->route('login')->with('error', 'Debes iniciar sesión para comprar.');
+        $validated = $request->validate([
+            'shipping_name' => 'required|string|max:255',
+            'shipping_phone' => 'required|string|max:20',
+            'shipping_email' => 'required|email',
+            'shipping_address' => 'required|string',
+            'shipping_district' => 'required|string',
+            'shipping_city' => 'required|string',
+            'shipping_zipcode' => 'nullable|string|max:10',
+            'shipping_reference' => 'nullable|string',
+            'payment_method' => 'required|string',
+            'notes' => 'nullable|string',
+        ]);
+
+        $cart = session()->get('cart', []);
+
+        if (empty($cart)) {
+            return redirect()->route('cart.index')->with('error', 'Tu carrito está vacío');
         }
 
-        // 2. Obtener carrito (Asumiendo que usas session 'cart')
-        $cart = session()->get('cart');
-
-        if (!$cart || count($cart) == 0) {
-            return redirect()->back()->with('error', 'Tu carrito está vacío.');
-        }
-
-        // 3. Calcular total
-        $total = 0;
-        foreach ($cart as $id => $details) {
-            $total += $details['price'] * $details['quantity'];
-        }
-
-        // 4. Iniciar transacción (Guarda todo o nada)
         try {
             DB::beginTransaction();
 
-            // Crear la Orden
+            $total = 0;
+            foreach ($cart as $item) {
+                $total += $item['price'] * $item['quantity'];
+            }
+
+            $shippingAddress = $validated['shipping_address'] . ', ' . 
+                             $validated['shipping_district'] . ', ' . 
+                             $validated['shipping_city'];
+
+            if (!empty($validated['shipping_zipcode'])) {
+                $shippingAddress .= ' - CP: ' . $validated['shipping_zipcode'];
+            }
+
+            if (!empty($validated['shipping_reference'])) {
+                $shippingAddress .= ' (Ref: ' . $validated['shipping_reference'] . ')';
+            }
+
             $order = Order::create([
                 'user_id' => Auth::id(),
                 'total' => $total,
                 'status' => 'pendiente',
-                'shipping_address' => $request->input('address', 'Dirección Principal'),
-                'notes' => $request->input('notes', '')
+                'shipping_address' => $shippingAddress,
+                'notes' => $validated['notes'] ?? null,
             ]);
 
-            // Guardar detalles y restar stock
-            foreach ($cart as $id => $details) {
-                $product = Product::find($id);
+            foreach ($cart as $productId => $item) {
+                $product = Product::find($productId);
                 
-                // Validación de Stock (Importante para la nota)
-                if ($product->stock < $details['quantity']) {
-                    throw new \Exception("El producto " . $product->name . " no tiene suficiente stock.");
+                if (!$product) {
+                    DB::rollBack();
+                    return redirect()->back()->with('error', 'Producto no encontrado');
                 }
 
-                // Guardar en tabla intermedia
-                $order->products()->attach($id, [
-                    'quantity' => $details['quantity'],
-                    'price' => $details['price']
+                if ($product->stock < $item['quantity']) {
+                    DB::rollBack();
+                    return redirect()->back()->with('error', "Stock insuficiente para {$product->name}");
+                }
+
+                $order->products()->attach($productId, [
+                    'quantity' => $item['quantity'],
+                    'price' => $item['price'],
                 ]);
 
-                // Restar del inventario
-                $product->decrement('stock', $details['quantity']);
+                $product->decrement('stock', $item['quantity']);
             }
 
-            // Vaciar carrito
-            session()->forget('cart');
-            
-            DB::commit(); // Confirmar cambios en BD
+            DB::commit();
 
-            return redirect()->route('orders.index')->with('success', '¡Orden realizada con éxito!');
+            session()->forget('cart');
+
+            return redirect()->route('checkout.success', $order->id);
 
         } catch (\Exception $e) {
-            DB::rollBack(); // Deshacer cambios si hay error
-            return redirect()->back()->with('error', 'Error al procesar: ' . $e->getMessage());
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Error al procesar el pedido: ' . $e->getMessage());
         }
+    }
+
+    public function success($orderId)
+    {
+        $order = Order::with('products')->findOrFail($orderId);
+
+        if ($order->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        return view('checkout.success', compact('order'));
     }
 }

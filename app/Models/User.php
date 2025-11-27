@@ -12,37 +12,41 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'name',
         'email',
         'password',
+        'role',     // Agregado para soportar roles
+        'address',  // Agregado por si guardas dirección
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    // --- NUEVAS FUNCIONES PARA TU PROYECTO ---
+
+    // Relación: Un usuario tiene muchas órdenes
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    // Helpers para verificar rol rápidamente en las vistas
+    public function isAdmin() {
+        return $this->role === 'admin';
+    }
+
+    public function isSeller() {
+        return $this->role === 'vendedor'; // Asegúrate que en BD guardas 'vendedor'
     }
 }

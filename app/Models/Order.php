@@ -9,7 +9,6 @@ class Order extends Model
 {
     use HasFactory;
 
-    // Campos que permitimos llenar masivamente
     protected $fillable = [
         'user_id',
         'total',
@@ -18,17 +17,62 @@ class Order extends Model
         'notes'
     ];
 
-    // Relación: Una orden pertenece a un Usuario
+    protected $casts = [
+        'total' => 'decimal:2',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    // Relación: Una orden tiene muchos Productos (a través de la tabla pivote order_product)
     public function products()
     {
-        return $this->belongsToMany(Product::class)
-                    ->withPivot('quantity', 'price') // Recuperamos cantidad y precio histórico
+        return $this->belongsToMany(Product::class, 'order_product')
+                    ->withPivot('quantity', 'price')
                     ->withTimestamps();
+    }
+
+    public function scopePending($query)
+    {
+        return $query->where('status', 'pendiente');
+    }
+
+    public function scopeCompleted($query)
+    {
+        return $query->where('status', 'entregado');
+    }
+
+    public function getStatusBadgeAttribute()
+    {
+        $badges = [
+            'pendiente' => 'bg-yellow-100 text-yellow-800',
+            'confirmado' => 'bg-blue-100 text-blue-800',
+            'enviado' => 'bg-purple-100 text-purple-800',
+            'entregado' => 'bg-green-100 text-green-800',
+            'cancelado' => 'bg-red-100 text-red-800',
+        ];
+
+        return $badges[$this->status] ?? 'bg-gray-100 text-gray-800';
+    }
+
+    public function getStatusLabelAttribute()
+    {
+        $labels = [
+            'pendiente' => 'Pendiente',
+            'confirmado' => 'Confirmado',
+            'enviado' => 'Enviado',
+            'entregado' => 'Entregado',
+            'cancelado' => 'Cancelado',
+        ];
+
+        return $labels[$this->status] ?? 'Desconocido';
+    }
+
+    public function canBeCancelled()
+    {
+        return $this->status === 'pendiente';
     }
 }

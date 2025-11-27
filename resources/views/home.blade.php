@@ -3,34 +3,35 @@
 @section('title', 'ShopSmart IA - Tu Marketplace Inteligente')
 
 @section('content')
-<!-- Hero Section -->
+
 <section class="bg-gradient-to-r from-green-900 via-teal-800 to-blue-900 py-20">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h1 class="text-5xl md:text-6xl font-bold text-white mb-6">
-            ¡Bienvenido a <span class="text-green-400">ShopSmart IA!</span>
+            Bienvenido a <span class="text-green-400">ShopSmart IA</span>
         </h1>
         <p class="text-xl text-gray-200 mb-8 max-w-3xl mx-auto">
-            Descubre productos increíbles con la ayuda de nuestra asistente de IA. 
+            Descubre productos increíbles con la ayuda de nuestra asistente de IA.
             Encuentra exactamente lo que buscas de manera rápida y sencilla.
         </p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="{{ route('products.public.index') }}" class="bg-green-600 hover:bg-green-700 text-white font-bold px-8 py-4 rounded-lg transition transform hover:scale-105 shadow-lg text-lg">
-                Explorar con IA
+            <a href="{{ route('products.public.index') }}" 
+               class="bg-green-600 hover:bg-green-700 text-white font-bold px-8 py-4 rounded-lg transition transform hover:scale-105 shadow-lg text-lg">
+                Explorar Productos
             </a>
-            <a href="{{ route('categories.public.index') }}" class="bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white font-bold px-8 py-4 rounded-lg transition transform hover:scale-105 shadow-lg text-lg border border-white/30">
+            <a href="{{ route('categories.public.index') }}" 
+               class="bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white font-bold px-8 py-4 rounded-lg transition transform hover:scale-105 shadow-lg text-lg border border-white/30">
                 Ver Categorías
             </a>
         </div>
     </div>
 </section>
 
-<!-- Categories Section -->
 <section class="py-16 bg-gray-900/50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2 class="text-4xl font-bold text-white mb-8 text-center">Categorías</h2>
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             @forelse($categories as $category)
-                <a href="{{ route('categories.public.show', $category->id) }}" 
+                <a href="{{ route('categories.public.show', $category->id) }}"
                    class="bg-gray-800 hover:bg-gray-700 rounded-lg p-6 text-center transition transform hover:scale-105 shadow-lg group">
                     <div class="text-4xl mb-3 group-hover:scale-110 transition">
                         @switch($category->name)
@@ -46,14 +47,11 @@
                             @case('Relojes')
                                 ⌚
                                 @break
-                            @case('Moda')
-                                👔
+                            @case('Auriculares')
+                                🎧
                                 @break
-                            @case('Hogar')
-                                🏠
-                                @break
-                            @case('Libros')
-                                📚
+                            @case('Tablets')
+                                📱
                                 @break
                             @default
                                 🏷️
@@ -72,7 +70,6 @@
     </div>
 </section>
 
-<!-- Featured Products Section -->
 <section class="py-16 bg-transparent">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center mb-8">
@@ -81,7 +78,7 @@
                 Ver todos →
             </a>
         </div>
-        
+
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             @forelse($featuredProducts as $product)
                 <div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
@@ -106,14 +103,14 @@
                             <p class="text-gray-400 text-sm mb-4 line-clamp-2">{{ Str::limit($product->description, 60) }}</p>
                         @endif
                         <div class="flex justify-between items-center mb-3">
-                            <span class="text-2xl font-bold text-green-400">S/. {{ number_format($product->price, 2) }}</span>
+                            <span class="text-2xl font-bold text-green-400">S/ {{ number_format($product->price, 2) }}</span>
                             @if($product->stock > 0)
                                 <span class="text-xs text-green-400">Stock: {{ $product->stock }}</span>
                             @else
                                 <span class="text-xs text-red-400">Agotado</span>
                             @endif
                         </div>
-                        <a href="{{ route('products.public.show', $product->id) }}" 
+                        <a href="{{ route('products.public.show', $product->id) }}"
                            class="block w-full bg-green-600 hover:bg-green-700 text-white text-center px-4 py-2 rounded-lg font-semibold transition">
                             Ver Detalles
                         </a>
@@ -132,7 +129,6 @@
     </div>
 </section>
 
-<!-- CTA Section -->
 <section class="bg-gradient-to-r from-green-600 to-teal-600 py-16 mt-8">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h2 class="text-4xl font-bold text-white mb-4">¿Listo para empezar a comprar?</h2>
@@ -140,16 +136,17 @@
             Únete a miles de usuarios que confían en ShopSmart IA para sus compras
         </p>
         @guest
-            <a href="{{ route('register') }}" 
+            <a href="{{ route('register') }}"
                class="bg-white text-green-600 hover:bg-gray-100 font-bold px-8 py-4 rounded-lg transition transform hover:scale-105 inline-block shadow-lg text-lg">
                 Crear cuenta gratis
             </a>
         @else
-            <a href="{{ route('products.public.index') }}" 
+            <a href="{{ route('products.public.index') }}"
                class="bg-white text-green-600 hover:bg-gray-100 font-bold px-8 py-4 rounded-lg transition transform hover:scale-105 inline-block shadow-lg text-lg">
                 Explorar productos
             </a>
         @endguest
     </div>
 </section>
+
 @endsection

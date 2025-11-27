@@ -61,15 +61,21 @@
                     </div>
                     
                     <div class="space-y-4">
-                        @if($product->stock > 0)
-                            <a href="{{ route('add_to_cart', $product->id) }}" class="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg transition duration-200 text-lg">
-                                🛒 Añadir al Carrito
-                            </a>
+                        @auth
+                            @if($product->stock > 0)
+                                <a href="{{ route('add_to_cart', $product->id) }}" class="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg transition duration-200 text-lg">
+                                    🛒 Añadir al Carrito
+                                </a>
+                            @else
+                                <button disabled class="w-full bg-gray-600 text-gray-400 font-bold py-4 px-6 rounded-lg cursor-not-allowed text-lg">
+                                    No Disponible
+                                </button>
+                            @endif
                         @else
-                            <button disabled class="w-full bg-gray-600 text-gray-400 font-bold py-4 px-6 rounded-lg cursor-not-allowed text-lg">
-                                No Disponible
-                            </button>
-                        @endif
+                            <a href="{{ route('login') }}" class="block w-full text-center bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-lg transition duration-200 text-lg">
+                                Inicia sesión para comprar
+                            </a>
+                        @endauth
                         
                         <a href="{{ route('products.public.index') }}" class="block w-full text-center bg-gray-700 hover:bg-gray-600 text-white font-semibold py-4 px-6 rounded-lg transition duration-200 text-lg">
                             ← Volver a Productos

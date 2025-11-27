@@ -131,8 +131,7 @@
                                         <!-- Botón -->
                                         <a href="{{ route('products.public.show', $product->id) }}" 
                                            class="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition duration-200">
-                                            Ver Detalles
-                                        </a>
+                                            Ver Detalles                                        </a>
                                     </div>
                                 </div>
                             </div>
