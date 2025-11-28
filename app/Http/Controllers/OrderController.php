@@ -166,6 +166,19 @@ class OrderController extends Controller
     }
 
     /**
+     * Muestra los pedidos del cliente autenticado (para vista pública)
+     */
+    public function myOrders()
+    {
+        $orders = Order::with('products')
+                      ->where('user_id', Auth::id())
+                      ->orderBy('created_at', 'desc')
+                      ->paginate(10);
+
+        return view('orders.my-orders', compact('orders'));
+    }
+
+    /**
      * Cancela una orden (solo si está pendiente)
      */
     public function destroy($id)
