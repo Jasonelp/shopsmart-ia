@@ -28,6 +28,7 @@
                         <div class="mb-6">
                             <label class="block text-gray-300 font-semibold mb-2">Buscar</label>
                             <input 
+                            
                                 type="text" 
                                 name="search" 
                                 value="{{ request('search') }}"
