@@ -34,6 +34,7 @@ class ProductController extends Controller
             'category_id' => 'required|exists:categories,id',
             'description' => 'nullable|string',
             'image' => 'nullable|string|max:255',
+            'specifications' => 'nullable|json',
         ]);
 
         Product::create($validated);
@@ -67,6 +68,7 @@ class ProductController extends Controller
             'category_id' => 'required|exists:categories,id',
             'description' => 'nullable|string',
             'image' => 'nullable|string|max:255',
+            'specifications' => 'nullable|json',
         ]);
 
         $product = Product::findOrFail($id);
