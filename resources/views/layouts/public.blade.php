@@ -103,5 +103,93 @@
         </div>
     </footer>
 
+    <!-- CHATBOT FLOTANTE -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button id="chatbot-button" class="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white rounded-full p-4 shadow-2xl transition-all duration-300 transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-green-300">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+            </svg>
+        </button>
+        
+        <!-- Panel del chatbot (oculto por defecto) -->
+        <div id="chatbot-panel" class="hidden absolute bottom-20 right-0 w-80 bg-gray-800 rounded-lg shadow-2xl overflow-hidden">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-green-500 to-blue-500 p-4 flex justify-between items-center">
+                <div class="flex items-center">
+                    <svg class="w-6 h-6 text-white mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z" />
+                        <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z" />
+                    </svg>
+                    <h3 class="font-bold text-white">Asistente IA</h3>
+                </div>
+                <button id="close-chatbot" class="text-white hover:text-gray-200 transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Contenido del chat -->
+            <div class="p-4 h-96 overflow-y-auto bg-gray-900">
+                <div class="space-y-4">
+                    <!-- Mensaje del bot -->
+                    <div class="flex items-start">
+                        <div class="bg-gray-700 rounded-lg p-3 max-w-xs">
+                            <p class="text-white text-sm">¡Hola! Soy tu asistente virtual. ¿En qué puedo ayudarte hoy?</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Opciones rápidas -->
+                    <div class="flex flex-col space-y-2">
+                        <a href="{{ route('products.public.index') }}" class="bg-blue-600 hover:bg-blue-700 text-white text-center px-4 py-2 rounded-lg text-sm transition">
+                            Ver Productos
+                        </a>
+                        @auth
+                            <a href="{{ route('orders.my-orders') }}" class="bg-green-600 hover:bg-green-700 text-white text-center px-4 py-2 rounded-lg text-sm transition">
+                                Mis Pedidos
+                            </a>
+                            <a href="{{ route('cart.index') }}" class="bg-purple-600 hover:bg-purple-700 text-white text-center px-4 py-2 rounded-lg text-sm transition">
+                                Ver Carrito
+                            </a>
+                        @endauth
+                        <button class="bg-gray-700 hover:bg-gray-600 text-white text-center px-4 py-2 rounded-lg text-sm transition" onclick="alert('Métodos de pago: Tarjeta, Yape, PagoEfectivo')">
+                            Métodos de Pago
+                        </button>
+                        <button class="bg-gray-700 hover:bg-gray-600 text-white text-center px-4 py-2 rounded-lg text-sm transition" onclick="alert('Envíos a todo el Perú. 24-48 horas en Lima.')">
+                            Información de Envío
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Footer con powered by -->
+            <div class="bg-gray-800 p-3 text-center border-t border-gray-700">
+                <p class="text-xs text-gray-400">Powered by ShopSmart IA</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script del chatbot -->
+    <script>
+        const chatbotButton = document.getElementById('chatbot-button');
+        const chatbotPanel = document.getElementById('chatbot-panel');
+        const closeChatbot = document.getElementById('close-chatbot');
+
+        chatbotButton.addEventListener('click', () => {
+            chatbotPanel.classList.toggle('hidden');
+        });
+
+        closeChatbot.addEventListener('click', () => {
+            chatbotPanel.classList.add('hidden');
+        });
+
+        // Cerrar al hacer clic fuera
+        document.addEventListener('click', (e) => {
+            if (!chatbotButton.contains(e.target) && !chatbotPanel.contains(e.target)) {
+                chatbotPanel.classList.add('hidden');
+            }
+        });
+    </script>
+
 </body>
 </html>
