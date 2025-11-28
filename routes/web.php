@@ -8,6 +8,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\ReviewController;
 use App\Http\Middleware\AdminOnly;
 
 // ========== RUTAS PÚBLICAS ==========
@@ -41,10 +42,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/add-to-cart/{id}', [CartController::class, 'addToCart'])->name('add_to_cart');
     Route::delete('/remove-from-cart', [CartController::class, 'remove'])->name('cart.remove');
 
+    // Mis Pedidos
+    Route::get('/my-orders', [OrderController::class, 'myOrders'])->name('orders.my-orders');
+
     // Checkout
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::post('/checkout/process', [CheckoutController::class, 'process'])->name('checkout.process');
     Route::get('/checkout/success/{order}', [CheckoutController::class, 'success'])->name('checkout.success');
+
+    // Reviews
+    Route::post('/products/{product}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
+    Route::delete('/reviews/{review}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
 });
 
 // ========== RUTAS DE ADMIN ==========
