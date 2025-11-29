@@ -1,6 +1,6 @@
 <x-guest-layout>
     <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-900 via-teal-800 to-blue-900 py-12 px-4 sm:px-6 lg:px-8">
-        <div class="max-w-md w-full">
+        <div class="w-full max-w-lg">
             <!-- Card de Registro -->
             <div class="bg-white rounded-2xl shadow-2xl p-8">
                 <!-- Logo y Título -->
