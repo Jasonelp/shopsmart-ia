@@ -14,25 +14,25 @@
                     <p class="text-gray-600 mt-2">Únete a ShopSmart IA</p>
                 </div>
 
-                <form method="POST" action="{{ route('register') }}" x-data="{ role: 'client' }">
+                <form method="POST" action="{{ route('register') }}" x-data="{ role: 'cliente' }">
                     @csrf
 
-                    <!-- Tabs de tipo de cuenta (como Figma) -->
+                    <!-- Tabs de tipo de cuenta -->
                     <div class="mb-6">
                         <label class="block text-gray-700 font-semibold mb-3">Tipo de cuenta</label>
                         <div class="grid grid-cols-2 gap-3">
-                            <button type="button" 
-                                    @click="role = 'client'" 
-                                    :class="role === 'client' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'"
+                            <button type="button"
+                                    @click="role = 'cliente'"
+                                    :class="role === 'cliente' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'"
                                     class="flex items-center justify-center px-4 py-3 rounded-lg cursor-pointer font-semibold shadow-md transition">
                                 <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
                                 </svg>
                                 Cliente
                             </button>
-                            <button type="button" 
-                                    @click="role = 'vendor'" 
-                                    :class="role === 'vendor' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'"
+                            <button type="button"
+                                    @click="role = 'vendedor'"
+                                    :class="role === 'vendedor' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'"
                                     class="flex items-center justify-center px-4 py-3 rounded-lg cursor-pointer font-semibold shadow-md transition">
                                 <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                                     <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
@@ -41,49 +41,48 @@
                                 Vendedor
                             </button>
                         </div>
-                        <!-- Campo oculto que envía el rol -->
                         <input type="hidden" name="role" :value="role">
                     </div>
 
                     <!-- Name -->
                     <div class="mb-4">
-                        <x-input-label for="name" :value="__('Nombre completo')" class="text-gray-700 font-semibold mb-2" />
-                        <x-text-input id="name" class="block mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-gray-50" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" placeholder="Ana María García" />
-                        <x-input-error :messages="$errors->get('name')" class="mt-2" />
+                        <label for="name" class="block text-gray-700 font-semibold mb-2">Nombre completo</label>
+                        <input id="name" type="text" name="name" value="{{ old('name') }}" required autofocus
+                               class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-gray-50"
+                               placeholder="Tu nombre completo">
+                        @error('name')
+                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
-                    <!-- Email Address -->
+                    <!-- Email -->
                     <div class="mb-4">
-                        <x-input-label for="email" :value="__('Correo electrónico')" class="text-gray-700 font-semibold mb-2" />
-                        <x-text-input id="email" class="block mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-gray-50" type="email" name="email" :value="old('email')" required autocomplete="username" placeholder="tu@email.com" />
-                        <x-input-error :messages="$errors->get('email')" class="mt-2" />
+                        <label for="email" class="block text-gray-700 font-semibold mb-2">Correo electrónico</label>
+                        <input id="email" type="email" name="email" value="{{ old('email') }}" required
+                               class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-gray-50"
+                               placeholder="tu@email.com">
+                        @error('email')
+                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <!-- Password -->
                     <div class="mb-4">
-                        <x-input-label for="password" :value="__('Contraseña')" class="text-gray-700 font-semibold mb-2" />
-                        <x-text-input id="password" class="block mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-gray-50"
-                                        type="password"
-                                        name="password"
-                                        required autocomplete="new-password" 
-                                        placeholder="Mínimo 6 caracteres" />
-                        <x-input-error :messages="$errors->get('password')" class="mt-2" />
+                        <label for="password" class="block text-gray-700 font-semibold mb-2">Contraseña</label>
+                        <input id="password" type="password" name="password" required
+                               class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-gray-50"
+                               placeholder="Mínimo 8 caracteres">
+                        @error('password')
+                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <!-- Confirm Password -->
-                    <div class="mb-4">
-                        <x-input-label for="password_confirmation" :value="__('Confirmar Contraseña')" class="text-gray-700 font-semibold mb-2" />
-                        <x-text-input id="password_confirmation" class="block mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-gray-50"
-                                        type="password"
-                                        name="password_confirmation" required autocomplete="new-password" 
-                                        placeholder="••••••••" />
-                        <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
-                    </div>
-
-                    <!-- Teléfono (opcional, según Figma) -->
-                    <div class="mb-4">
-                        <x-input-label for="phone" value="Teléfono (opcional)" class="text-gray-700 font-semibold mb-2" />
-                        <x-text-input id="phone" class="block mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-gray-50" type="text" name="phone" placeholder="+51 987 654 321" />
+                    <div class="mb-6">
+                        <label for="password_confirmation" class="block text-gray-700 font-semibold mb-2">Confirmar Contraseña</label>
+                        <input id="password_confirmation" type="password" name="password_confirmation" required
+                               class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-gray-50"
+                               placeholder="Repite tu contraseña">
                     </div>
 
                     <!-- Terms -->
@@ -93,7 +92,7 @@
                         </p>
                     </div>
 
-                    <!-- Submit Button -->
+                    <!-- Submit -->
                     <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200 shadow-lg transform hover:scale-[1.02]">
                         Crear Cuenta
                     </button>
@@ -101,7 +100,7 @@
                     <!-- Login Link -->
                     <div class="mt-6 text-center">
                         <p class="text-gray-600">
-                            ¿Ya tienes cuenta? 
+                            ¿Ya tienes cuenta?
                             <a href="{{ route('login') }}" class="text-green-600 hover:text-green-700 font-semibold">
                                 Iniciar Sesión
                             </a>
