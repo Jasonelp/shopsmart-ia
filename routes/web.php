@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\AIController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CartController;
@@ -20,9 +21,15 @@ Route::get('/producto/{id}', [ProductController::class, 'publicShow'])->name('pr
 Route::get('/categorias', [CategoryController::class, 'publicIndex'])->name('categories.public.index');
 Route::get('/categoria/{id}', [CategoryController::class, 'publicShow'])->name('categories.public.show');
 
+// ========== RUTAS IA ==========
+Route::get('/ai/test', [AIController::class, 'test'])->name('ai.test');              // TEST IA
+Route::post('/ai/chat', [AIController::class, 'chat'])->name('ai.chat');            // CHAT IA
+Route::get('/ai/product/{id}', [AIController::class, 'productAnalysis'])->name('ai.product');  // ANALIZAR PRODUCTO
+Route::post('/ai/vision', [AIController::class, 'vision'])->name('ai.vision');      // VISIÓN IA
+
 // ========== RUTAS AUTENTICADAS (TODOS LOS USUARIOS) ==========
 Route::middleware(['auth', 'verified'])->group(function () {
-    
+
     // Dashboard inteligente - redirige según rol
     Route::get('/dashboard', function () {
         $user = auth()->user();
@@ -80,7 +87,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::put('/usuarios/{id}/role', [AdminController::class, 'updateUserRole'])->name('admin.users.updateRole');
     Route::delete('/usuarios/{id}', [AdminController::class, 'destroyUser'])->name('admin.users.destroy');
     Route::get('/ventas', [AdminController::class, 'salesHistory'])->name('admin.sales');
-    
+
     // CRUDs Admin
     Route::resource('products', ProductController::class);
     Route::resource('categories', CategoryController::class);

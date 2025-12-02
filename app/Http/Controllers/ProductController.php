@@ -3,131 +3,213 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Schema;
 use App\Models\Product;
 use App\Models\Category;
 
 class ProductController extends Controller
 {
-    // ========== MÉTODOS ADMIN ==========
-    
-    // Muestra la lista de productos (Vista 'Read').
+    // =======================================================
+    // ADMIN CRUD
+    // =======================================================
+
     public function index()
     {
-        $products = Product::with('category')->get();
+        $products = Product::with('category')
+            ->latest()
+            ->get();
+
         return view('admin.products.index', compact('products'));
     }
 
-    // Muestra el formulario para crear un nuevo producto (Vista 'Create').
     public function create()
     {
-        $categories = Category::all();
+        $categories = Category::orderBy('name')->get();
         return view('admin.products.create', compact('categories'));
     }
 
-    // Guarda el nuevo producto en la base de datos (Lógica 'Create').
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'price' => 'required|numeric|min:0',
-            'stock' => 'required|integer|min:0',
-            'category_id' => 'required|exists:categories,id',
-            'description' => 'nullable|string',
-            'image' => 'nullable|string|max:255',
-            'specifications' => 'nullable|json',
-        ]);
+        $validated = $this->validateProduct($request);
+
+        // Subir imagen
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image')->store('products', 'public');
+        }
 
         Product::create($validated);
 
-        return redirect()->route('products.index')
-                         ->with('success', 'Producto creado exitosamente.');
+        return redirect()
+            ->route('products.index')
+            ->with('success', 'Producto creado exitosamente.');
     }
 
-    // Muestra un producto específico (Vista 'Read' individual, opcional).
     public function show($id)
     {
         $product = Product::with('category')->findOrFail($id);
+
         return view('admin.products.show', compact('product'));
     }
 
-    // Muestra el formulario para editar un producto (Vista 'Update').
     public function edit($id)
     {
         $product = Product::findOrFail($id);
-        $categories = Category::all();
+        $categories = Category::orderBy('name')->get();
+
         return view('admin.products.edit', compact('product', 'categories'));
     }
 
-    // Actualiza el producto en la base de datos (Lógica 'Update').
     public function update(Request $request, $id)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'price' => 'required|numeric|min:0',
-            'stock' => 'required|integer|min:0',
-            'category_id' => 'required|exists:categories,id',
-            'description' => 'nullable|string',
-            'image' => 'nullable|string|max:255',
-            'specifications' => 'nullable|json',
-        ]);
+        $validated = $this->validateProduct($request);
 
         $product = Product::findOrFail($id);
+
+        // Subir imagen nueva
+        if ($request->hasFile('image')) {
+
+            // Borrar la anterior
+            if ($product->image && Storage::disk('public')->exists($product->image)) {
+                Storage::disk('public')->delete($product->image);
+            }
+
+            $validated['image'] = $request->file('image')->store('products', 'public');
+        }
+
         $product->update($validated);
 
-        return redirect()->route('products.index')
-                         ->with('success', 'Producto actualizado exitosamente.');
+        return redirect()
+            ->route('products.index')
+            ->with('success', 'Producto actualizado correctamente.');
     }
 
-    // Elimina un producto (Lógica 'Delete').
     public function destroy($id)
     {
         $product = Product::findOrFail($id);
-        $product->delete();
 
-        return redirect()->route('products.index')
-                         ->with('success', 'Producto eliminado exitosamente.');
-    }
-
-    // ========== MÉTODOS PÚBLICOS MEJORADOS ==========
-
-    // Muestra la lista pública de productos CON FILTROS Y PAGINACIÓN
-    public function publicIndex(Request $request)
-    {
-        $query = Product::with('category');
-
-        // Filtro de búsqueda
-        if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
+        // Validación de integridad
+        if ($product->orders()->count() > 0) {
+            return redirect()->route('products.index')
+                ->with('error', 'No se puede eliminar: producto está en órdenes.');
         }
 
-        // Filtro de categoría
+        // Borrar imagen
+        if ($product->image && Storage::disk('public')->exists($product->image)) {
+            Storage::disk('public')->delete($product->image);
+        }
+
+        $product->delete();
+
+        return redirect()
+            ->route('products.index')
+            ->with('success', 'Producto eliminado correctamente.');
+    }
+
+    // =======================================================
+    // MÉTODOS PÚBLICOS (CATÁLOGO)
+    // =======================================================
+
+    public function publicIndex(Request $request)
+    {
+        $query = Product::with('category')
+            ->where('stock', '>', 0);
+
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('name', 'like', "%{$request->search}%")
+                  ->orWhere('description', 'like', "%{$request->search}%");
+            });
+        }
+
         if ($request->filled('category')) {
             $query->where('category_id', $request->category);
         }
 
-        // Filtro de precio mínimo
         if ($request->filled('min_price')) {
             $query->where('price', '>=', $request->min_price);
         }
 
-        // Filtro de precio máximo
         if ($request->filled('max_price')) {
             $query->where('price', '<=', $request->max_price);
         }
 
-        // Paginación de 12 productos por página
-        $products = $query->paginate(12)->withQueryString();
-        
-        // Traer categorías para el filtro del sidebar
-        $categories = Category::all();
+        $sortBy = $request->get('sort', 'created_at');
+        $sortOrder = $request->get('order', 'desc');
 
-        return view('products.public-index', compact('products', 'categories'));
+        if (in_array($sortBy, ['name', 'price', 'created_at'])) {
+            $query->orderBy($sortBy, $sortOrder);
+        }
+
+        $products = $query->paginate(12)->withQueryString();
+        $categories = Category::orderBy('name')->get();
+
+        return view('public.index', compact('products', 'categories'));
     }
 
-    // Muestra un solo producto público
     public function publicShow($id)
     {
         $product = Product::with('category')->findOrFail($id);
-        return view('products.public-show', compact('product'));
+
+        // Reviews
+        $reviews = collect();
+        $reviewsCount = 0;
+        $averageRating = 0;
+        $canReview = false;
+
+        if (Schema::hasTable('reviews')) {
+            $reviews = $product->reviews()->with('user')->latest()->get();
+            $reviewsCount = $reviews->count();
+            $averageRating = $reviewsCount > 0 ? round($reviews->avg('rating'), 1) : 0;
+
+            // El usuario puede dejar review si compró el producto
+            if (auth()->check()) {
+                $canReview = auth()->user()->orders()
+                    ->whereHas('products', function ($q) use ($product) {
+                        $q->where('product_id', $product->id);
+                    })
+                    ->exists()
+                    &&
+                    !$product->reviews()->where('user_id', auth()->id())->exists();
+            }
+        }
+
+        // Productos relacionados
+        $relatedProducts = Product::where('category_id', $product->category_id)
+            ->where('id', '!=', $product->id)
+            ->where('stock', '>', 0)
+            ->take(4)
+            ->get();
+
+        return view('public.show', compact(
+            'product',
+            'reviews',
+            'reviewsCount',
+            'averageRating',
+            'canReview',
+            'relatedProducts'
+        ));
+    }
+
+    // =======================================================
+    // VALIDACIÓN CENTRALIZADA (REUTILIZABLE)
+    // =======================================================
+
+    private function validateProduct(Request $request)
+    {
+        return $request->validate([
+            'name'        => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'price'       => 'required|numeric|min:0.01',
+            'stock'       => 'required|integer|min:0',
+            'category_id' => 'required|exists:categories,id',
+            'image'       => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        ], [
+            'name.required'        => 'El nombre es obligatorio.',
+            'price.required'       => 'El precio es obligatorio.',
+            'stock.required'       => 'El stock es obligatorio.',
+            'category_id.required' => 'Debes seleccionar una categoría.',
+        ]);
     }
 }
+
