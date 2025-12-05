@@ -3,12 +3,12 @@
 @section('title', 'Productos - ShopSmart IA')
 
 @section('content')
-<div class="min-h-screen py-12">
+<div class="min-h-screen py-12 bg-gradient-to-br from-green-900 via-teal-800 to-blue-900">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Encabezado -->
         <div class="mb-8">
             <h1 class="text-4xl font-bold text-white mb-4">Descubre Nuestros Productos</h1>
-            <p class="text-gray-300">Explora nuestro catálogo completo con la ayuda de inteligencia artificial</p>
+            <p class="text-gray-300">JENELL POTO ROTO</p>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">

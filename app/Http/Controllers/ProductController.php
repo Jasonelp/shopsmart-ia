@@ -33,7 +33,6 @@ class ProductController extends Controller
     {
         $validated = $this->validateProduct($request);
 
-        // Subir imagen
         if ($request->hasFile('image')) {
             $validated['image'] = $request->file('image')->store('products', 'public');
         }
@@ -48,7 +47,6 @@ class ProductController extends Controller
     public function show($id)
     {
         $product = Product::with('category')->findOrFail($id);
-
         return view('admin.products.show', compact('product'));
     }
 
@@ -66,10 +64,8 @@ class ProductController extends Controller
 
         $product = Product::findOrFail($id);
 
-        // Subir imagen nueva
         if ($request->hasFile('image')) {
 
-            // Borrar la anterior
             if ($product->image && Storage::disk('public')->exists($product->image)) {
                 Storage::disk('public')->delete($product->image);
             }
@@ -88,13 +84,11 @@ class ProductController extends Controller
     {
         $product = Product::findOrFail($id);
 
-        // Validación de integridad
         if ($product->orders()->count() > 0) {
             return redirect()->route('products.index')
                 ->with('error', 'No se puede eliminar: producto está en órdenes.');
         }
 
-        // Borrar imagen
         if ($product->image && Storage::disk('public')->exists($product->image)) {
             Storage::disk('public')->delete($product->image);
         }
@@ -151,7 +145,6 @@ class ProductController extends Controller
     {
         $product = Product::with('category')->findOrFail($id);
 
-        // Reviews
         $reviews = collect();
         $reviewsCount = 0;
         $averageRating = 0;
@@ -162,7 +155,6 @@ class ProductController extends Controller
             $reviewsCount = $reviews->count();
             $averageRating = $reviewsCount > 0 ? round($reviews->avg('rating'), 1) : 0;
 
-            // El usuario puede dejar review si compró el producto
             if (auth()->check()) {
                 $canReview = auth()->user()->orders()
                     ->whereHas('products', function ($q) use ($product) {
@@ -174,14 +166,13 @@ class ProductController extends Controller
             }
         }
 
-        // Productos relacionados
         $relatedProducts = Product::where('category_id', $product->category_id)
             ->where('id', '!=', $product->id)
             ->where('stock', '>', 0)
             ->take(4)
             ->get();
 
-        return view('public.show', compact(
+        return view('products.public-show', compact(
             'product',
             'reviews',
             'reviewsCount',
@@ -190,10 +181,6 @@ class ProductController extends Controller
             'relatedProducts'
         ));
     }
-
-    // =======================================================
-    // VALIDACIÓN CENTRALIZADA (REUTILIZABLE)
-    // =======================================================
 
     private function validateProduct(Request $request)
     {
@@ -212,4 +199,3 @@ class ProductController extends Controller
         ]);
     }
 }
-
